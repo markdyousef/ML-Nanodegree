@@ -40,6 +40,13 @@ class LearningAgent(Agent):
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
 
+        self.epsilon += self.epsilon * 0.95
+        self.alpha = 0.5
+
+        if testing is True:
+            self.epsilon = 0
+            self.alpha = 0
+
         return None
 
     def build_state(self):
@@ -69,8 +76,15 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Calculate the maximum Q-value of all actions for a given state
+        maxQ = 0.0
 
-        maxQ = None
+        try:
+            index = self.Q.index(state)
+            for action in enumerate(self.Q.index[index]):
+                if action > maxQ:
+                    maxQ = action
+        except ValueError:
+            maxQ = None
 
         return maxQ
 
@@ -84,6 +98,11 @@ class LearningAgent(Agent):
         # When learning, check if the 'state' is not in the Q-table
         # If it is not, create a new dictionary for that state
         #   Then, for each action available, set the initial Q-value to 0.0
+        if self.learning is True:
+            if state in self.Q:
+                return
+            else:
+                self.Q[state] = dict({'left': 0.0}, {'right': 0.0}, {'forward': 0.0})
 
         return
 
@@ -103,6 +122,16 @@ class LearningAgent(Agent):
         # When not learning, choose a random action
         # When learning, choose a random action with 'epsilon' probability
         #   Otherwise, choose an action with the highest Q-value for the current state
+        if self.learning is True:
+            if self.epsilon <= random():
+                try:
+                    actions = self.Q[state]
+                    maxQ = 0.0
+                    for item in enumerate(actions, start=None):
+                        if item > maxQ:
+                            action = item
+                except ValueError:
+                    action = action
 
         return action
 
@@ -117,6 +146,9 @@ class LearningAgent(Agent):
         ###########
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
+        if self.learning is True:
+            currentQ = self.Q[state][action]
+            self.Q[state][action] = reward * self.alpha + currentQ * (1 - self.alpha)
 
         return
 
