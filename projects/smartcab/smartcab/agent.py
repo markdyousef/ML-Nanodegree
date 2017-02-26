@@ -41,7 +41,6 @@ class LearningAgent(Agent):
         # If 'testing' is True, set epsilon and alpha to 0
 
         self.epsilon = self.epsilon - 0.05
-        self.alpha = 0.5
 
         if testing is True:
             self.epsilon = 0
@@ -121,11 +120,11 @@ class LearningAgent(Agent):
         if self.learning is True:
             if self.epsilon < random.random():
                 if state in self.Q.keys():
-                    maxQ = 0.0
-                    for item in self.Q[state]:
-                        if item > maxQ:
-                            action = item
-                            maxQ = item
+                    maxQ = self.get_maxQ(state)
+                    actions = self.Q[state].keys()
+                    for index, item in enumerate(self.Q[state]):
+                        if item == maxQ:
+                            action = actions[index]
 
         return action
 
@@ -194,7 +193,7 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay=0.01, log_metrics=True)
+    sim = Simulator(env, update_delay=0.01, log_metrics=True, optimized=True)
 
     ##############
     # Run the simulator
