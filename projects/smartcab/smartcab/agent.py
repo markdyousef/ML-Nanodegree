@@ -23,6 +23,7 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set any additional class parameters as needed
+        self.tolerance = 0.5
 
 
     def reset(self, destination=None, testing=False):
@@ -40,7 +41,7 @@ class LearningAgent(Agent):
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
 
-        self.epsilon = self.epsilon - 0.05
+        self.epsilon = self.epsilon - math.pow(self.alpha, self.tolerance)
 
         if testing is True:
             self.epsilon = 0
@@ -62,7 +63,7 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set 'state' as a tuple of relevant data for the agent
-        state = (waypoint, inputs['light'], inputs['left'], inputs['right'], inputs['oncoming'], deadline)
+        state = (waypoint, inputs['light'], inputs['oncoming'])
 
         return state
 
@@ -78,9 +79,8 @@ class LearningAgent(Agent):
         maxQ = 0.0
 
         if state in self.Q.keys():
-            for action in enumerate(self.Q[state]):
-                if action > maxQ:
-                    maxQ = action
+            maxAction = max(self.Q[state], key=lambda action: self.Q[state][action])
+            maxQ = filter(lambda action: action == maxAction, self.Q[state])
 
         return maxQ
 
@@ -110,7 +110,7 @@ class LearningAgent(Agent):
         self.state = state
         self.next_waypoint = self.planner.next_waypoint()
         action = random.choice(self.valid_actions)
-
+        print('rand action', action)
         ###########
         ## TO DO ##
         ###########
@@ -119,13 +119,10 @@ class LearningAgent(Agent):
         #   Otherwise, choose an action with the highest Q-value for the current state
         if self.learning is True:
             if self.epsilon < random.random():
-                if state in self.Q.keys():
-                    maxQ = self.get_maxQ(state)
-                    actions = self.Q[state].keys()
-                    for index, item in enumerate(self.Q[state]):
-                        if item == maxQ:
-                            action = actions[index]
-
+                maxQ = self.get_maxQ(state)
+                if type(maxQ) is tuple or type(maxQ) is list:
+                    action = random.choice(maxQ)
+        print('chosen action', action)
         return action
 
 
@@ -178,7 +175,7 @@ def run():
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent, learning=True)
+    agent = env.create_agent(LearningAgent, learning=True, alpha=0.6)
 
     ##############
     # Follow the driving agent
@@ -200,7 +197,7 @@ def run():
     # Flags:
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05
     #   n_test     - discrete number of testing trials to perform, default is 0
-    sim.run(n_test=10)
+    sim.run(n_test=20)
 
 
 if __name__ == '__main__':
